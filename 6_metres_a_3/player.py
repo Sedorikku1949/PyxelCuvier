@@ -1,5 +1,3 @@
-
-# Création de la classe du Joueur
 import pyxel
 
 from bullet import Bullet
@@ -21,6 +19,11 @@ class Player:
         self.bullet_canon = 0
 
         self.life = 3
+        self.MAX_LIFE = 4
+
+        self.overheat = 0
+        self.MAX_OVERHEAT = 100
+        self.firing = True
 
     def draw(self):
         """
@@ -31,6 +34,10 @@ class Player:
         # On dessine les bullets
         for bullet in self.bullets:
             bullet.draw()
+
+        # On dessine le overheat
+        pyxel.rect(9, 122, 42, 4, 7)
+        pyxel.rect(10, 123, 40 * self.overheat / self.MAX_OVERHEAT, 2, 8)
 
     def update_bullets(self):
         """
@@ -52,27 +59,40 @@ class Player:
 
     def update(self):
         """
-        Cette fonction est appellée à chaque mise à jour
+        Cette fonction est appelée à chaque mise à jour
         """
         self.update_bullets()
         self.move()
 
+        if self.overheat >= self.MAX_OVERHEAT:
+            self.firing = False
+
         # on tire une balle si la touche ENTER ou SPACE ou MOUSE_LEFT est pressé
-        if pyxel.btn(pyxel.KEY_RETURN) or pyxel.btn(
-                pyxel.KEY_SPACE) or pyxel.btn(pyxel.MOUSE_BUTTON_LEFT):
+        if self.firing and (pyxel.btn(pyxel.KEY_RETURN) or pyxel.btn(
+                pyxel.KEY_SPACE) or pyxel.btn(pyxel.MOUSE_BUTTON_LEFT)) and self.overheat < self.MAX_OVERHEAT:
             # On calcule le x du canon:
             canon_x = self.bullet_canon * 8 + self.x
-            # On tire une balle!
+            # On tire une balle !
             self.bullets.append(Bullet(canon_x, self.y - 2, 3, -1))
 
             # On change de canon
             self.bullet_canon = (self.bullet_canon + 1) % 2
 
+            # On augmente l'overheat
+            self.overheat += 0.5
+        elif self.overheat > 0:
+            # On refroidit
+            self.overheat -= 1
+
+        if self.overheat <= 0:
+            self.overheat = 0
+            self.firing = True
+
     def move(self):
         """
         Cette fonction permet de détecter les mouvements du joueur et de le déplacer
         """
-        # On déclare `move_x`et `move_y` pour préparer le joueur
+        # On déclare `move_x` et `move_y` pour préparer le joueur
         move_x, move_y = 0, 0
 
         if pyxel.btn(pyxel.KEY_Z) or pyxel.btn(pyxel.KEY_UP):
@@ -93,7 +113,7 @@ class Player:
         if move_x == move_y == 0:
             return
 
-        # Si on a un déplacement sur les deux axes, il faut calculer l'hypothénuse
+        # Si on a un déplacement sur les deux axes, il faut calculer l'hypoténuse
         if move_x != 0 and move_y != 0:
             hyp = pyxel.sqrt(move_x**2 + move_y**2)
             # On calcule un coefficient
@@ -106,7 +126,7 @@ class Player:
         self.x += move_x
         self.y += move_y
 
-        # On le bloque sur les cotés:
+        # On le bloque sur les côtés :
         if self.x > 119:
             self.x = 119
         if self.x < 0:

@@ -1,9 +1,11 @@
-from random import randint, random
 import pyxel
-from background import Background
 
+from background import Background
 from game import Game
 from player import Player
+from boss import BOSS_BULLETS
+from enemy import ENEMY_BULLETS
+from medium_boss import MEDIUM_ENEMY_BULLETS
 
 """
 Nuit du c0de 2023
@@ -15,9 +17,11 @@ Univers choisi: Univers 3
 Nom du jeu : The Last Space Fighter
 """
 
-# Création de la classe du Menu avec le titre et bouton start quand entrée est appuyer
+
+# Création de la classe du Menu avec le titre et bouton start quand entrée est appuyé
 class Menu:
-    def draw(self):
+    @staticmethod
+    def draw():
         pyxel.blt(22, 30, 0, 0, 32, 84, 40)
         pyxel.text(30, 90, "Appuyez sur [ENTREE]", 1)
 
@@ -41,7 +45,8 @@ class App:
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        #quand la touche escape est appuyer le jeu est arreter 
+
+        # quand la touche escape est appuyée le jeu est arrêté
         if pyxel.btnp(pyxel.KEY_ESCAPE):
             pyxel.quit()
 
@@ -51,7 +56,6 @@ class App:
 
         # Pour lancer le jeu
         if self.actual_state == 0 and pyxel.btn(pyxel.KEY_RETURN):
-
             # On met à jour le statut
             self.actual_state = 1
 
@@ -59,11 +63,16 @@ class App:
         if self.actual_state == 1 and self.game.player.life <= 0 and pyxel.btn(pyxel.KEY_F):
             self.game.player = Player()
             self.game.enemies = []
+            self.game.medium_enemies = []
             self.game.background = Background()
             self.game.score = 0
             self.game.boss = None
             self.game.boss_timeout = self.game.BOSS_INTERVAL
-            
+
+            ENEMY_BULLETS.clear()
+            MEDIUM_ENEMY_BULLETS.clear()
+            BOSS_BULLETS.clear()
+
     def draw(self):
         # On nettoie l'écran
         pyxel.cls(0)
